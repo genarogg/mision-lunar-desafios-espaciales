@@ -1,3 +1,9 @@
+integrantes:
+Leniangel Pérez 
+Genaro Gonzalez
+Yaneth Doria
+Cristian Ruiz
+
 Misión Lunar: Desafíos Espaciales
 Descripción:
 Bienvenido al emocionante mundo de "Misión Lunar: Desafíos Espaciales". Este repositorio contiene el código fuente completo de un juego de plataformas en el que los jugadores asumen el papel de un intrépido astronauta en una misión lunar llena de emocionantes obstáculos y desafíos intergalácticos.
