@@ -1,8 +1,6 @@
 integrantes:
 Leniangel Pérez 
 Genaro Gonzalez
-Yaneth Doria
-Cristian Ruiz
 
 Misión Lunar: Desafíos Espaciales
 Descripción:
