@@ -1,0 +1,15 @@
+{
+  "name": "platformer-master",
+  "version": "1.0.0",
+  "description": "Tile Based Platformer Game",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "python main.py",
+    "editor": "python level_editor.py",
+    "install": "pip install -r requirements.txt"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}
