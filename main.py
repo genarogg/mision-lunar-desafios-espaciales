@@ -3,92 +3,138 @@ from pygame.locals import *
 
 pygame.init()
 
-# Definir el ancho y la altura de la pantalla
 ancho_pantalla = 1000
-altura_pantalla = 1000
+alto_pantalla = 1000
 
-# Crear la pantalla del juego
-pantalla = pygame.display.set_mode((ancho_pantalla, altura_pantalla))
-pygame.display.set_caption('Juego de Plataformas')
+pantalla = pygame.display.set_mode((ancho_pantalla, alto_pantalla))
+pygame.display.set_caption('Plataformas')
 
-# Definir variables del juego
-tamaño_bloque = 50
+#definir variables del juego
+tamaño_casilla = 50
 
-# Cargar imágenes
-imagen_sol = pygame.image.load('img/sun.png')
-imagen_fondo = pygame.image.load('img/sky.png')
+#cargar imágenes
+img_sol = pygame.image.load('img/sun.png')
+img_fondo = pygame.image.load('img/sky.png')
 
-# Función para dibujar una cuadrícula en la pantalla
-def dibujar_cuadricula():
-    for linea in range(0, 20):
-        pygame.draw.line(pantalla, (255, 255, 255), (0, linea * tamaño_bloque), (ancho_pantalla, linea * tamaño_bloque))
-        pygame.draw.line(pantalla, (255, 255, 255), (linea * tamaño_bloque, 0), (linea * tamaño_bloque, altura_pantalla))
+class Jugador():
+    def __init__(self, x, y):
+        img = pygame.image.load('img/guy1.png')
+        self.imagen = pygame.transform.scale(img, (40, 80))
+        self.rect = self.imagen.get_rect()
+        self.rect.x = x
+        self.rect.y = y
+        self.vel_y = 0
+        self.saltado = False
 
-# Clase para el mundo del juego
+    def actualizar(self):
+        dx = 0
+        dy = 0
+
+        #obtener teclas presionadas
+        tecla = pygame.key.get_pressed()
+        if tecla[pygame.K_SPACE] and self.saltado == False:
+            self.vel_y = -15
+            self.saltado = True
+        if tecla[pygame.K_SPACE] == False:
+            self.saltado = False
+        if tecla[pygame.K_LEFT]:
+            dx -= 5
+        if tecla[pygame.K_RIGHT]:
+            dx += 5
+
+        #añadir gravedad
+        self.vel_y += 1
+        if self.vel_y > 10:
+            self.vel_y = 10
+        dy += self.vel_y
+
+        #verificar colisión
+
+        #actualizar coordenadas del jugador
+        self.rect.x += dx
+        self.rect.y += dy
+
+        if self.rect.bottom > alto_pantalla:
+            self.rect.bottom = alto_pantalla
+            dy = 0
+
+        #dibujar jugador en la pantalla
+        pantalla.blit(self.imagen, self.rect)
+
 class Mundo():
     def __init__(self, datos):
-        self.lista_bloques = []
+        self.lista_de_baldosas = []
 
-        # Cargar imágenes
-        imagen_tierra = pygame.image.load('img/dirt.png')
-        imagen_hierba = pygame.image.load('img/grass.png')
+        #cargar imágenes
+        img_tierra = pygame.image.load('img/dirt.png')
+        img_cesped = pygame.image.load('img/grass.png')
 
-        # Crear los bloques del mundo basándose en los datos proporcionados
-        numero_fila = 0
+        contador_filas = 0
         for fila in datos:
-            numero_columna = 0
-            for bloque in fila:
-                if bloque == 1:
-                    img = pygame.transform.scale(imagen_tierra, (tamaño_bloque, tamaño_bloque))
+            contador_columnas = 0
+            for baldosa in fila:
+                if baldosa == 1:
+                    img = pygame.transform.scale(img_tierra, (tamaño_casilla, tamaño_casilla))
                     rect_img = img.get_rect()
-                    rect_img.x = numero_columna * tamaño_bloque
-                    rect_img.y = numero_fila * tamaño_bloque
-                    bloque = (img, rect_img)
-                    self.lista_bloques.append(bloque)
-                if bloque == 2:
-                    img = pygame.transform.scale(imagen_hierba, (tamaño_bloque, tamaño_bloque))
+                    rect_img.x = contador_columnas * tamaño_casilla
+                    rect_img.y = contador_filas * tamaño_casilla
+                    baldosa = (img, rect_img)
+                    self.lista_de_baldosas.append(baldosa)
+                if baldosa == 2:
+                    img = pygame.transform.scale(img_cesped, (tamaño_casilla, tamaño_casilla))
                     rect_img = img.get_rect()
-                    rect_img.x = numero_columna * tamaño_bloque
-                    rect_img.y = numero_fila * tamaño_bloque
-                    bloque = (img, rect_img)
-                    self.lista_bloques.append(bloque)
-                numero_columna += 1
-            numero_fila += 1
+                    rect_img.x = contador_columnas * tamaño_casilla
+                    rect_img.y = contador_filas * tamaño_casilla
+                    baldosa = (img, rect_img)
+                    self.lista_de_baldosas.append(baldosa)
+                contador_columnas += 1
+            contador_filas += 1
 
-    # Función para dibujar el mundo en la pantalla
     def dibujar(self):
-        for bloque in self.lista_bloques:
-            pantalla.blit(bloque[0], bloque[1])
+        for baldosa in self.lista_de_baldosas:
+            pantalla.blit(baldosa[0], baldosa[1])
 
-# Datos del mundo del juego
+#... datos del mundo ...
 datos_mundo = [
-# Aquí van los datos del mundo
+[1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1], 
+[1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1], 
+[1, 0, 0, 0, 0, 7, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 8, 1], 
+[1, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 7, 0, 0, 0, 0, 0, 2, 2, 1], 
+[1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 2, 0, 7, 0, 5, 0, 0, 0, 1], 
+[1, 0, 0, 0, 0, 0, 0, 0, 5, 0, 0, 0, 2, 2, 0, 0, 0, 0, 0, 1], 
+[1, 7, 0, 0, 2, 2, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1], 
+[1, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1], 
+[1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7, 0, 0, 7, 0, 0, 0, 0, 1], 
+[1, 0, 2, 0, 0, 7, 0, 7, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1], 
+[1, 0, 0, 2, 0, 0, 4, 0, 0, 0, 0, 3, 0, 0, 3, 0, 0, 0, 0, 1], 
+[1, 0, 0, 0, 0, 0, 0, 0, 0, 2, 2, 2, 2, 2, 2, 2, 0, 0, 0, 1], 
+[1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1], 
+[1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7, 0, 7, 0, 0, 0, 0, 2, 0, 1], 
+[1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1], 
+[1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 0, 2, 0, 2, 2, 2, 2, 2, 1], 
+[1, 0, 0, 0, 0, 0, 2, 2, 2, 6, 6, 6, 6, 6, 1, 1, 1, 1, 1, 1], 
+[1, 0, 0, 0, 0, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1], 
+[1, 0, 0, 0, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1], 
+[1, 2, 2, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
 ]
 
-# Crear el mundo del juego
+jugador = Jugador(100, alto_pantalla - 130)
 mundo = Mundo(datos_mundo)
 
-# Bucle principal del juego
-ejecutando = True
-while ejecutando:
+ejecutar = True
+while ejecutar:
 
-    # Dibujar el fondo y el sol
-    pantalla.blit(imagen_fondo, (0, 0))
-    pantalla.blit(imagen_sol, (100, 100))
+    pantalla.blit(img_fondo, (0, 0))
+    pantalla.blit(img_sol, (100, 100))
 
-    # Dibujar el mundo
     mundo.dibujar()
 
-    # Dibujar la cuadrícula
-    dibujar_cuadricula()
+    jugador.actualizar()
 
-    # Procesar eventos del juego
     for evento in pygame.event.get():
         if evento.type == pygame.QUIT:
-            ejecutando = False
+            ejecutar = False
 
-    # Actualizar la pantalla del juego
     pygame.display.update()
 
-# Salir de Pygame
 pygame.quit()
