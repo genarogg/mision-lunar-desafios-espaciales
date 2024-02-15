@@ -12,12 +12,12 @@ alto_pantalla = 1000
 pantalla = pygame.display.set_mode((ancho_pantalla, alto_pantalla))
 pygame.display.set_caption('Plataformas')
 
-#define las variables del juego
-tamaño_baldosa = 50
+#definir variables del juego
+tamaño_casilla = 50
 
-#carga las imágenes
-img_sol = pygame.image.load('img/sun.png')
-img_fondo = pygame.image.load('img/sky.png')
+#cargar imágenes
+imagen_sol = pygame.image.load('img/sun.png')
+imagen_fondo = pygame.image.load('img/sky.png')
 
 
 class Jugador():
@@ -36,6 +36,8 @@ class Jugador():
         self.rect = self.imagen.get_rect()
         self.rect.x = x
         self.rect.y = y
+        self.ancho = self.imagen.get_width()
+        self.alto = self.imagen.get_height()
         self.vel_y = 0
         self.saltado = False
         self.direccion = 0
@@ -43,9 +45,9 @@ class Jugador():
     def actualizar(self):
         dx = 0
         dy = 0
-        tiempo_animacion = 5
+        enfriamiento_caminar = 5
 
-        #obtener las teclas presionadas
+        #obtener teclas presionadas
         tecla = pygame.key.get_pressed()
         if tecla[pygame.K_SPACE] and self.saltado == False:
             self.vel_y = -15
@@ -68,8 +70,9 @@ class Jugador():
             if self.direccion == -1:
                 self.imagen = self.imagenes_izquierda[self.indice]
 
-        #manejar la animación
-        if self.contador > tiempo_animacion:
+
+        #manejar animación
+        if self.contador > enfriamiento_caminar:
             self.contador = 0	
             self.indice += 1
             if self.indice >= len(self.imagenes_derecha):
@@ -79,15 +82,33 @@ class Jugador():
             if self.direccion == -1:
                 self.imagen = self.imagenes_izquierda[self.indice]
 
+
         #añadir gravedad
         self.vel_y += 1
         if self.vel_y > 10:
             self.vel_y = 10
         dy += self.vel_y
 
-        #verificar colisiones
+        #verificar colisión
+        for casilla in mundo.lista_casillas:
+            #verificar colisión en dirección x
+            if casilla[1].colliderect(self.rect.x + dx, self.rect.y, self.ancho, self.alto):
+                dx = 0
+            #verificar colisión en dirección y
+            if casilla[1].colliderect(self.rect.x, self.rect.y + dy, self.ancho, self.alto):
+                #verificar si está debajo del suelo, es decir, saltando
+                if self.vel_y < 0:
+                    dy = casilla[1].bottom - self.rect.top
+                    self.vel_y = 0
+                #verificar si está sobre el suelo, es decir, cayendo
+                elif self.vel_y >= 0:
+                    dy = casilla[1].top - self.rect.bottom
+                    self.vel_y = 0
 
-        #actualizar las coordenadas del jugador
+
+
+
+        #actualizar coordenadas del jugador
         self.rect.x += dx
         self.rect.y += dy
 
@@ -95,67 +116,45 @@ class Jugador():
             self.rect.bottom = alto_pantalla
             dy = 0
 
-        #dibujar al jugador en la pantalla
+        #dibujar jugador en pantalla
         pantalla.blit(self.imagen, self.rect)
-
-
+        pygame.draw.rect(pantalla, (255, 255, 255), self.rect, 2)
 class Mundo():
     def __init__(self, datos):
-        self.lista_baldosas = []
+        self.lista_casillas = []
 
         #cargar imágenes
-        img_tierra = pygame.image.load('img/dirt.png')
-        img_cesped = pygame.image.load('img/grass.png')
+        img_suciedad = pygame.image.load('img/dirt.png')
+        img_hierba = pygame.image.load('img/grass.png')
 
         contador_filas = 0
         for fila in datos:
             contador_columnas = 0
-            for baldosa in fila:
-                if baldosa == 1:
-                    img = pygame.transform.scale(img_tierra, (tamaño_baldosa, tamaño_baldosa))
+            for casilla in fila:
+                if casilla == 1:
+                    img = pygame.transform.scale(img_suciedad, (tamaño_casilla, tamaño_casilla))
                     rect_img = img.get_rect()
-                    rect_img.x = contador_columnas * tamaño_baldosa
-                    rect_img.y = contador_filas * tamaño_baldosa
-                    baldosa = (img, rect_img)
-                    self.lista_baldosas.append(baldosa)
-                if baldosa == 2:
-                    img = pygame.transform.scale(img_cesped, (tamaño_baldosa, tamaño_baldosa))
+                    rect_img.x = contador_columnas * tamaño_casilla
+                    rect_img.y = contador_filas * tamaño_casilla
+                    casilla = (img, rect_img)
+                    self.lista_casillas.append(casilla)
+                if casilla == 2:
+                    img = pygame.transform.scale(img_hierba, (tamaño_casilla, tamaño_casilla))
                     rect_img = img.get_rect()
-                    rect_img.x = contador_columnas * tamaño_baldosa
-                    rect_img.y = contador_filas * tamaño_baldosa
-                    baldosa = (img, rect_img)
-                    self.lista_baldosas.append(baldosa)
+                    rect_img.x = contador_columnas * tamaño_casilla
+                    rect_img.y = contador_filas * tamaño_casilla
+                    casilla = (img, rect_img)
+                    self.lista_casillas.append(casilla)
                 contador_columnas += 1
             contador_filas += 1
 
     def dibujar(self):
-        for baldosa in self.lista_baldosas:
-            pantalla.blit(baldosa[0], baldosa[1])
-#... datos del mundo ...
-datos_mundo = [
-[1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1], 
-[1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1], 
-[1, 0, 0, 0, 0, 7, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 8, 1], 
-[1, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 7, 0, 0, 0, 0, 0, 2, 2, 1], 
-[1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 2, 0, 7, 0, 5, 0, 0, 0, 1], 
-[1, 0, 0, 0, 0, 0, 0, 0, 5, 0, 0, 0, 2, 2, 0, 0, 0, 0, 0, 1], 
-[1, 7, 0, 0, 2, 2, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1], 
-[1, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1], 
-[1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7, 0, 0, 7, 0, 0, 0, 0, 1], 
-[1, 0, 2, 0, 0, 7, 0, 7, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1], 
-[1, 0, 0, 2, 0, 0, 4, 0, 0, 0, 0, 3, 0, 0, 3, 0, 0, 0, 0, 1], 
-[1, 0, 0, 0, 0, 0, 0, 0, 0, 2, 2, 2, 2, 2, 2, 2, 0, 0, 0, 1], 
-[1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1], 
-[1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7, 0, 7, 0, 0, 0, 0, 2, 0, 1], 
-[1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1], 
-[1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 0, 2, 0, 2, 2, 2, 2, 2, 1], 
-[1, 0, 0, 0, 0, 0, 2, 2, 2, 6, 6, 6, 6, 6, 1, 1, 1, 1, 1, 1], 
-[1, 0, 0, 0, 0, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1], 
-[1, 0, 0, 0, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1], 
-[1, 2, 2, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
-]
+        for casilla in self.lista_casillas:
+            pantalla.blit(casilla[0], casilla[1])
+            pygame.draw.rect(pantalla, (255, 255, 255), casilla[1], 2)
 
-jugador = Jugador(100, alto_pantalla - 130)
+
+jugador = Jugador(100, altura_pantalla - 130)
 mundo = Mundo(datos_mundo)
 
 ejecutar = True
