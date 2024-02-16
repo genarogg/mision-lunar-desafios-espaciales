@@ -15,7 +15,7 @@ pantalla = pygame.display.set_mode((ancho_pantalla, alto_pantalla))
 pygame.display.set_caption('Plataformas')
 
 # Definir variables del juego
-tamaño_bloque = 50
+tamano_bloque = 50
 fin_del_juego = 0
 menu_principal = True
 nivel = 0
@@ -31,9 +31,9 @@ img_salida = pygame.image.load('img/exit_btn.png')
 # Función para reiniciar nivel
 def reiniciar_nivel(nivel):
     jugador.reset(100, alto_pantalla - 130)
-    grupo_blob.empty()
-    grupo_lava.empty()
-    grupo_salida.empty()
+    grupo_de_enemigos.empty()
+    grupo_de_enemigos.empty()
+    grupo_de_salidas.empty()
 
     # Cargar datos del nivel y crear mundo
     if path.exists(f'level{nivel}_data'):
@@ -136,15 +136,15 @@ class Jugador():
                         self.en_aire = False
 
             # Colisión con enemigos
-            if pygame.sprite.spritecollide(self, grupo_blob, False):
+            if pygame.sprite.spritecollide(self, grupo_de_enemigos, False):
                 fin_del_juego = -1
 
             # Colisión con lava
-            if pygame.sprite.spritecollide(self, grupo_lava, False):
+            if pygame.sprite.spritecollide(self, grupo_de_enemigos, False):
                 fin_del_juego = -1
 
             # Colisión con salida
-            if pygame.sprite.spritecollide(self, grupo_salida, False):
+            if pygame.sprite.spritecollide(self, grupo_de_salidas, False):
                 fin_del_juego = 1
 
             # Actualizar coordenadas del jugador
@@ -197,27 +197,27 @@ class Mundo():
 			num_columna = 0
 			for tile in fila:
 				if tile == 1:
-					img = pygame.transform.scale(img_tierra, (tamaño_de_tile, tamaño_de_tile))
+					img = pygame.transform.scale(img_tierra, (tamano_bloque, tamano_bloque))
 					img_rect = img.get_rect()
-					img_rect.x = num_columna * tamaño_de_tile
-					img_rect.y = num_fila * tamaño_de_tile
+					img_rect.x = num_columna * tamano_bloque
+					img_rect.y = num_fila * tamano_bloque
 					tile = (img, img_rect)
 					self.lista_de_tiles.append(tile)
 				if tile == 2:
-					img = pygame.transform.scale(img_pasto, (tamaño_de_tile, tamaño_de_tile))
+					img = pygame.transform.scale(img_pasto, (tamano_bloque, tamano_bloque))
 					img_rect = img.get_rect()
-					img_rect.x = num_columna * tamaño_de_tile
-					img_rect.y = num_fila * tamaño_de_tile
+					img_rect.x = num_columna * tamano_bloque
+					img_rect.y = num_fila * tamano_bloque
 					tile = (img, img_rect)
 					self.lista_de_tiles.append(tile)
 				if tile == 3:
-					bloque = Enemigo(num_columna * tamaño_de_tile, num_fila * tamaño_de_tile + 15)
+					bloque = Enemigo(num_columna * tamano_bloque, num_fila * tamano_bloque + 15)
 					grupo_de_enemigos.add(bloque)
 				if tile == 6:
-					lava = Lava(num_columna * tamaño_de_tile, num_fila * tamaño_de_tile + (tamaño_de_tile // 2))
+					lava = Lava(num_columna * tamano_bloque, num_fila * tamano_bloque + (tamano_bloque // 2))
 					grupo_de_lavas.add(lava)
 				if tile == 8:
-					salida = Salida(num_columna * tamaño_de_tile, num_fila * tamaño_de_tile - (tamaño_de_tile // 2))
+					salida = Salida(num_columna * tamano_bloque, num_fila * tamano_bloque - (tamano_bloque // 2))
 					grupo_de_salidas.add(salida)
 				num_columna += 1
 			num_fila += 1
@@ -252,8 +252,8 @@ class Lava(pygame.sprite.Sprite):
 	def __init__(self, x, y):
 		pygame.sprite.Sprite.__init__(self)
 		img = pygame.image.load('img/lava.png')
-		self.imagen = pygame.transform.scale(img, (tamaño_de_tile, tamaño_de_tile // 2))
-		self.rect = self.imagen.get_rect()
+		self.image = pygame.transform.scale(img, (tamano_bloque, tamano_bloque // 2))
+		self.rect = self.image.get_rect()
 		self.rect.x = x
 		self.rect.y = y
 
@@ -261,8 +261,8 @@ class Salida(pygame.sprite.Sprite):
 	def __init__(self, x, y):
 		pygame.sprite.Sprite.__init__(self)
 		img = pygame.image.load('img/salida.png')
-		self.imagen = pygame.transform.scale(img, (tamaño_de_tile, int(tamaño_de_tile * 1.5)))
-		self.rect = self.imagen.get_rect()
+		self.image = pygame.transform.scale(img, (tamano_bloque, int(tamano_bloque * 1.5)))
+		self.rect = self.image.get_rect()
 		self.rect.x = x
 		self.rect.y = y
 
@@ -281,11 +281,10 @@ if path.exists(f'datos_nivel{nivel}'):
 	datos_mundo = pickle.load(pickle_in)
 mundo = Mundo(datos_mundo)
 
-
 #crear botones
-boton_reiniciar = Boton(ancho_pantalla // 2 - 50, alto_pantalla // 2 + 100, img_reiniciar)
-boton_iniciar = Boton(ancho_pantalla // 2 - 350, alto_pantalla // 2, img_iniciar)
-boton_salir = Boton(ancho_pantalla // 2 + 150, alto_pantalla // 2, img_salir)
+boton_reiniciar = Boton(ancho_pantalla // 2 - 50, alto_pantalla // 2 + 100, img_reinicio)
+boton_iniciar = Boton(ancho_pantalla // 2 - 350, alto_pantalla // 2, img_inicio)
+boton_salir = Boton(ancho_pantalla // 2 + 150, alto_pantalla // 2, img_salida)
 
 
 ejecutar = True
@@ -317,7 +316,7 @@ while ejecutar:
 		if fin_del_juego == -1:
 			if boton_reiniciar.dibujar():
 				datos_mundo = []
-				mundo = resetear_nivel(nivel)
+				mundo = reiniciar_nivel(nivel)
 				fin_del_juego = 0
 
 		#si el jugador ha completado el nivel
@@ -327,14 +326,14 @@ while ejecutar:
 			if nivel <= max_niveles:
 				#reiniciar nivel
 				datos_mundo = []
-				mundo = resetear_nivel(nivel)
+				mundo = reiniciar_nivel(nivel)
 				fin_del_juego = 0
 			else:
 				if boton_reiniciar.dibujar():
 					nivel = 1
 					#reiniciar nivel
 					datos_mundo = []
-					mundo = resetear_nivel(nivel)
+					mundo = reiniciar_nivel(nivel)
 					fin_del_juego = 0
 
 
