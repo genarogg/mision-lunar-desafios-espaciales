@@ -11,8 +11,8 @@ pygame.init()
 reloj = pygame.time.Clock()
 fps = 60
 
-ancho_pantalla = 1000
-alto_pantalla = 1000
+ancho_pantalla = 1280
+alto_pantalla = 720
 
 pantalla = pygame.display.set_mode((ancho_pantalla, alto_pantalla))
 pygame.display.set_caption('Plataformas')
@@ -34,7 +34,7 @@ puntaje = 0
 
 # Define los colores
 blanco = (255, 255, 255)
-azul = (0, 0, 255)
+azul = 	(255, 255, 255)
 
 
 # Carga las imágenes

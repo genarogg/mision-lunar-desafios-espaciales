@@ -9,11 +9,11 @@ reloj = pygame.time.Clock()
 fps = 60
 
 #ventana del juego
-tamano_celda = 50
-columnas = 20
+tamano_celda = 25
+columnas = 10
 margen = 100
-ancho_pantalla = tamano_celda * columnas
-alto_pantalla = (tamano_celda * columnas) + margen
+ancho_pantalla = 1280
+alto_pantalla = 720
 
 pantalla = pygame.display.set_mode((ancho_pantalla, alto_pantalla))
 pygame.display.set_caption('Editor de Niveles')
@@ -154,13 +154,13 @@ while ejecutar:
     #cargar y guardar nivel
     if boton_guardar.dibujar():
         #guardar datos del nivel
-        pickle_out = open(f'nivel{nivel}_datos', 'wb')
+        pickle_out = open(f'./niveles/level{nivel}_data', 'wb')
         pickle.dump(datos_mundo, pickle_out)
         pickle_out.close()
     if boton_cargar.dibujar():
         #cargar datos del nivel
-        if path.exists(f'./niveles/nivel{nivel}_datos'):
-            pickle_in = open(f'nivel{nivel}_datos', 'rb')
+        if path.exists(f'./niveles/level{nivel}_data'):
+            pickle_in = open(f'./niveles/level{nivel}_data', 'rb')
             datos_mundo = pickle.load(pickle_in)
 
 
