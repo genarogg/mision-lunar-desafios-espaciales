@@ -9,11 +9,11 @@ reloj = pygame.time.Clock()
 fps = 60
 
 #ventana del juego
-tamaño_celda = 50
+tamano_celda = 50
 columnas = 20
 margen = 100
-ancho_pantalla = tamaño_celda * columnas
-alto_pantalla = (tamaño_celda * columnas) + margen
+ancho_pantalla = tamano_celda * columnas
+alto_pantalla = (tamano_celda * columnas) + margen
 
 pantalla = pygame.display.set_mode((ancho_pantalla, alto_pantalla))
 pygame.display.set_caption('Editor de Niveles')
@@ -21,7 +21,7 @@ pygame.display.set_caption('Editor de Niveles')
 
 #cargar imágenes
 img_sol = pygame.image.load('img/sun.png')
-img_sol = pygame.transform.scale(img_sol, (tamaño_celda, tamaño_celda))
+img_sol = pygame.transform.scale(img_sol, (tamano_celda, tamano_celda))
 img_fondo = pygame.image.load('img/sky.png')
 img_fondo = pygame.transform.scale(img_fondo, (ancho_pantalla, alto_pantalla - margen))
 img_tierra = pygame.image.load('img/dirt.png')
@@ -67,9 +67,9 @@ def dibujar_texto(texto, fuente, color_texto, x, y):
 def dibujar_cuadricula():
     for c in range(21):
         #líneas verticales
-        pygame.draw.line(pantalla, blanco, (c * tamaño_celda, 0), (c * tamaño_celda, alto_pantalla - margen))
+        pygame.draw.line(pantalla, blanco, (c * tamano_celda, 0), (c * tamano_celda, alto_pantalla - margen))
         #líneas horizontales
-        pygame.draw.line(pantalla, blanco, (0, c * tamaño_celda), (ancho_pantalla, c * tamaño_celda))
+        pygame.draw.line(pantalla, blanco, (0, c * tamano_celda), (ancho_pantalla, c * tamano_celda))
 
 def dibujar_mundo():
     for fila in range(20):
@@ -77,36 +77,36 @@ def dibujar_mundo():
             if datos_mundo[fila][columna] > 0:
                 if datos_mundo[fila][columna] == 1:
                     #bloques de tierra
-                    img = pygame.transform.scale(img_tierra, (tamaño_celda, tamaño_celda))
-                    pantalla.blit(img, (columna * tamaño_celda, fila * tamaño_celda))
+                    img = pygame.transform.scale(img_tierra, (tamano_celda, tamano_celda))
+                    pantalla.blit(img, (columna * tamano_celda, fila * tamano_celda))
                 if datos_mundo[fila][columna] == 2:
                     #bloques de hierba
-                    img = pygame.transform.scale(img_hierba, (tamaño_celda, tamaño_celda))
-                    pantalla.blit(img, (columna * tamaño_celda, fila * tamaño_celda))
+                    img = pygame.transform.scale(img_hierba, (tamano_celda, tamano_celda))
+                    pantalla.blit(img, (columna * tamano_celda, fila * tamano_celda))
                 if datos_mundo[fila][columna] == 3:
                     #bloques de enemigos
-                    img = pygame.transform.scale(img_blob, (tamaño_celda, int(tamaño_celda * 0.75)))
-                    pantalla.blit(img, (columna * tamaño_celda, fila * tamaño_celda + (tamaño_celda * 0.25)))
+                    img = pygame.transform.scale(img_blob, (tamano_celda, int(tamano_celda * 0.75)))
+                    pantalla.blit(img, (columna * tamano_celda, fila * tamano_celda + (tamano_celda * 0.25)))
                 if datos_mundo[fila][columna] == 4:
                     #plataforma móvil horizontal
-                    img = pygame.transform.scale(img_plataforma_x, (tamaño_celda, tamaño_celda // 2))
-                    pantalla.blit(img, (columna * tamaño_celda, fila * tamaño_celda))
+                    img = pygame.transform.scale(img_plataforma_x, (tamano_celda, tamano_celda // 2))
+                    pantalla.blit(img, (columna * tamano_celda, fila * tamano_celda))
                 if datos_mundo[fila][columna] == 5:
                     #plataforma móvil vertical
-                    img = pygame.transform.scale(img_plataforma_y, (tamaño_celda, tamaño_celda // 2))
-                    pantalla.blit(img, (columna * tamaño_celda, fila * tamaño_celda))
+                    img = pygame.transform.scale(img_plataforma_y, (tamano_celda, tamano_celda // 2))
+                    pantalla.blit(img, (columna * tamano_celda, fila * tamano_celda))
                 if datos_mundo[fila][columna] == 6:
                     #lava
-                    img = pygame.transform.scale(img_lava, (tamaño_celda, tamaño_celda // 2))
-                    pantalla.blit(img, (columna * tamaño_celda, fila * tamaño_celda + (tamaño_celda // 2)))
+                    img = pygame.transform.scale(img_lava, (tamano_celda, tamano_celda // 2))
+                    pantalla.blit(img, (columna * tamano_celda, fila * tamano_celda + (tamano_celda // 2)))
                 if datos_mundo[fila][columna] == 7:
                     #moneda
-                    img = pygame.transform.scale(img_moneda, (tamaño_celda // 2, tamaño_celda // 2))
-                    pantalla.blit(img, (columna * tamaño_celda + (tamaño_celda // 4), fila * tamaño_celda + (tamaño_celda // 4)))
+                    img = pygame.transform.scale(img_moneda, (tamano_celda // 2, tamano_celda // 2))
+                    pantalla.blit(img, (columna * tamano_celda + (tamano_celda // 4), fila * tamano_celda + (tamano_celda // 4)))
                 if datos_mundo[fila][columna] == 8:
                     #salida
-                    img = pygame.transform.scale(img_salida, (tamaño_celda, int(tamaño_celda * 1.5)))
-                    pantalla.blit(img, (columna * tamaño_celda, fila * tamaño_celda - (tamaño_celda // 2)))
+                    img = pygame.transform.scale(img_salida, (tamano_celda, int(tamano_celda * 1.5)))
+                    pantalla.blit(img, (columna * tamano_celda, fila * tamano_celda - (tamano_celda // 2)))
 
 
 class Boton():
@@ -149,7 +149,7 @@ while ejecutar:
     #dibujar fondo
     pantalla.fill(verde)
     pantalla.blit(img_fondo, (0, 0))
-    pantalla.blit(img_sol, (tamaño_celda * 2, tamaño_celda * 2))
+    pantalla.blit(img_sol, (tamano_celda * 2, tamano_celda * 2))
 
     #cargar y guardar nivel
     if boton_guardar.dibujar():
@@ -170,8 +170,8 @@ while ejecutar:
 
 
     #texto mostrando el nivel actual
-    dibujar_texto(f'Nivel: {nivel}', fuente, blanco, tamaño_celda, alto_pantalla - 60)
-    dibujar_texto('Presiona ARRIBA o ABAJO para cambiar de nivel', fuente, blanco, tamaño_celda, alto_pantalla - 40)
+    dibujar_texto(f'Nivel: {nivel}', fuente, blanco, tamano_celda, alto_pantalla - 60)
+    dibujar_texto('Presiona ARRIBA o ABAJO para cambiar de nivel', fuente, blanco, tamano_celda, alto_pantalla - 40)
 
     #manejador de eventos
     for evento in pygame.event.get():
@@ -182,8 +182,8 @@ while ejecutar:
         if evento.type == pygame.MOUSEBUTTONDOWN and clickeado == False:
             clickeado = True
             pos = pygame.mouse.get_pos()
-            x = pos[0] // tamaño_celda
-            y = pos[1] // tamaño_celda
+            x = pos[0] // tamano_celda
+            y = pos[1] // tamano_celda
             #verificar que las coordenadas estén dentro del área de bloques
             if x < 20 and y < 20:
                 #actualizar valor del bloque
