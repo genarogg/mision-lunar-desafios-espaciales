@@ -70,8 +70,8 @@ def reiniciar_nivel(nivel):
     grupo_salida.empty()
 
     # Carga los datos del nivel y crea el mundo
-    if path.exists(f'level{nivel}_data'):
-        pickle_in = open(f'level{nivel}_data', 'rb')
+    if path.exists(f'./niveles/level{nivel}_data'):
+        pickle_in = open(f'./niveles/level{nivel}_data', 'rb')
         datos_mundo = pickle.load(pickle_in)
     mundo = Mundo(datos_mundo)
     # Crea una moneda ficticia para mostrar el puntaje
@@ -386,8 +386,8 @@ moneda_puntaje = Moneda(tamano_bloque // 2, tamano_bloque // 2)
 grupo_monedas.add(moneda_puntaje)
 
 # Carga los datos del nivel y crea el mundo
-if path.exists(f'level{nivel}_data'):
-    pickle_in = open(f'level{nivel}_data', 'rb')
+if path.exists(f'./niveles/level{nivel}_data'):
+    pickle_in = open(f'./niveles/level{nivel}_data', 'rb')
     datos_mundo = pickle.load(pickle_in)
 mundo = Mundo(datos_mundo)
 

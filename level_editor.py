@@ -159,7 +159,7 @@ while ejecutar:
         pickle_out.close()
     if boton_cargar.dibujar():
         #cargar datos del nivel
-        if path.exists(f'nivel{nivel}_datos'):
+        if path.exists(f'./niveles/nivel{nivel}_datos'):
             pickle_in = open(f'nivel{nivel}_datos', 'rb')
             datos_mundo = pickle.load(pickle_in)
 
