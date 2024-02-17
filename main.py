@@ -11,8 +11,8 @@ pygame.init()
 reloj = pygame.time.Clock()
 fps = 60
 
-ancho_pantalla = 1000
-alto_pantalla = 1000
+ancho_pantalla = 1280
+alto_pantalla = 720
 
 pantalla = pygame.display.set_mode((ancho_pantalla, alto_pantalla))
 pygame.display.set_caption('Plataformas')
@@ -34,7 +34,7 @@ puntaje = 0
 
 # Define los colores
 blanco = (255, 255, 255)
-azul = (0, 0, 255)
+azul = 	(255, 255, 255)
 
 
 # Carga las imágenes
@@ -70,8 +70,8 @@ def reiniciar_nivel(nivel):
     grupo_salida.empty()
 
     # Carga los datos del nivel y crea el mundo
-    if path.exists(f'level{nivel}_data'):
-        pickle_in = open(f'level{nivel}_data', 'rb')
+    if path.exists(f'./niveles/level{nivel}_data'):
+        pickle_in = open(f'./niveles/level{nivel}_data', 'rb')
         datos_mundo = pickle.load(pickle_in)
     mundo = Mundo(datos_mundo)
     # Crea una moneda ficticia para mostrar el puntaje
@@ -386,8 +386,8 @@ moneda_puntaje = Moneda(tamano_bloque // 2, tamano_bloque // 2)
 grupo_monedas.add(moneda_puntaje)
 
 # Carga los datos del nivel y crea el mundo
-if path.exists(f'level{nivel}_data'):
-    pickle_in = open(f'level{nivel}_data', 'rb')
+if path.exists(f'./niveles/level{nivel}_data'):
+    pickle_in = open(f'./niveles/level{nivel}_data', 'rb')
     datos_mundo = pickle.load(pickle_in)
 mundo = Mundo(datos_mundo)
 
