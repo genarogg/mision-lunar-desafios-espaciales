@@ -15,32 +15,38 @@ ancho_pantalla = 1000
 alto_pantalla = 1000
 
 pantalla = pygame.display.set_mode((ancho_pantalla, alto_pantalla))
-pygame.display.set_caption('Juego de Plataformas')
+pygame.display.set_caption('Plataformas')
 
-# Definir fuente
+
+# Define la fuente
 fuente = pygame.font.SysFont('Bauhaus 93', 70)
-fuente_puntuacion = pygame.font.SysFont('Bauhaus 93', 30)
+fuente_puntaje = pygame.font.SysFont('Bauhaus 93', 30)
 
-# Definir variables del juego
+
+# Define las variables del juego
 tamano_bloque = 50
 fin_juego = 0
 menu_principal = True
 nivel = 3
 max_niveles = 7
-puntuacion = 0
+puntaje = 0
 
-# Definir colores
+
+# Define los colores
 blanco = (255, 255, 255)
 azul = (0, 0, 255)
 
-# Cargar imágenes
+
+# Carga las imágenes
 img_sol = pygame.image.load('img/sun.png')
 img_fondo = pygame.image.load('img/sky.png')
 img_reiniciar = pygame.image.load('img/restart_btn.png')
 img_inicio = pygame.image.load('img/start_btn.png')
-img_salida = pygame.image.load('img/exit_btn.png')
+img_salir = pygame.image.load('img/exit_btn.png')
 
-# Cargar sonidos
+# Carga los sonidos
+pygame.mixer.music.load('img/music.wav')
+pygame.mixer.music.play(-1, 0.0, 5000)
 fx_moneda = pygame.mixer.Sound('img/coin.wav')
 fx_moneda.set_volume(0.5)
 fx_salto = pygame.mixer.Sound('img/jump.wav')
@@ -48,25 +54,31 @@ fx_salto.set_volume(0.5)
 fx_fin_juego = pygame.mixer.Sound('img/game_over.wav')
 fx_fin_juego.set_volume(0.5)
 
-# Definir función para dibujar texto
+
 def dibujar_texto(texto, fuente, color_texto, x, y):
     img = fuente.render(texto, True, color_texto)
     pantalla.blit(img, (x, y))
 
-# Función para reiniciar nivel
+
+# Función para reiniciar el nivel
 def reiniciar_nivel(nivel):
-    jugador.resetear(100, alto_pantalla - 130)
-    grupo_blob.empty()
+    jugador.reiniciar(100, alto_pantalla - 130)
+    grupo_blobs.empty()
+    grupo_plataformas.empty()
+    grupo_monedas.empty()
     grupo_lava.empty()
     grupo_salida.empty()
 
-    # Cargar datos del nivel y crear mundo
+    # Carga los datos del nivel y crea el mundo
     if path.exists(f'level{nivel}_data'):
         pickle_in = open(f'level{nivel}_data', 'rb')
         datos_mundo = pickle.load(pickle_in)
     mundo = Mundo(datos_mundo)
-
+    # Crea una moneda ficticia para mostrar el puntaje
+    moneda_puntaje = Moneda(tamano_bloque // 2, tamano_bloque // 2)
+    grupo_monedas.add(moneda_puntaje)
     return mundo
+
 
 class Boton():
     def __init__(self, x, y, imagen):
@@ -79,10 +91,10 @@ class Boton():
     def dibujar(self):
         accion = False
 
-        # Obtener posición del ratón
+        # Obtiene la posición del ratón
         pos = pygame.mouse.get_pos()
 
-        # Verificar condiciones de ratón sobre el botón y clickeado
+        # Verifica las condiciones de paso del ratón y clickeo
         if self.rect.collidepoint(pos):
             if pygame.mouse.get_pressed()[0] == 1 and not self.clickeado:
                 accion = True
@@ -91,29 +103,31 @@ class Boton():
         if pygame.mouse.get_pressed()[0] == 0:
             self.clickeado = False
 
-        # Dibujar botón
+        # Dibuja el botón
         pantalla.blit(self.imagen, self.rect)
 
         return accion
 
+
 class Jugador():
     def __init__(self, x, y):
-        self.resetear(x, y)
+        self.reiniciar(x, y)
 
     def actualizar(self, fin_juego):
         dx = 0
         dy = 0
-        tiempo_entre_pasos = 5
+        enfriamiento_caminar = 5
+        umbral_colision = 20
 
         if fin_juego == 0:
-            # Obtener teclas presionadas
+            # Obtiene las teclas presionadas
             tecla = pygame.key.get_pressed()
-            if tecla[pygame.K_SPACE] and not self.saltado and not self.en_aire:
+            if tecla[pygame.K_SPACE] and not self.saltando and not self.en_aire:
                 fx_salto.play()
                 self.vel_y = -15
-                self.saltado = True
+                self.saltando = True
             if not tecla[pygame.K_SPACE]:
-                self.saltado = False
+                self.saltando = False
             if tecla[pygame.K_LEFT]:
                 dx -= 5
                 self.contador += 1
@@ -130,8 +144,8 @@ class Jugador():
                 if self.direccion == -1:
                     self.imagen = self.imagenes_izquierda[self.indice]
 
-            # Manejar animación
-            if self.contador > tiempo_entre_pasos:
+            # Maneja la animación
+            if self.contador > enfriamiento_caminar:
                 self.contador = 0
                 self.indice += 1
                 if self.indice >= len(self.imagenes_derecha):
@@ -141,45 +155,65 @@ class Jugador():
                 if self.direccion == -1:
                     self.imagen = self.imagenes_izquierda[self.indice]
 
-            # Agregar gravedad
+            # Agrega gravedad
             self.vel_y += 1
             if self.vel_y > 10:
                 self.vel_y = 10
             dy += self.vel_y
 
-            # Verificar colisión
+            # Verifica colisiones
             self.en_aire = True
             for bloque in mundo.lista_bloques:
-                # Verificar colisión en dirección x
+                # Verifica colisión en dirección x
                 if bloque[1].colliderect(self.rect.x + dx, self.rect.y, self.ancho, self.alto):
                     dx = 0
-                # Verificar colisión en dirección y
+                # Verifica colisión en dirección y
                 if bloque[1].colliderect(self.rect.x, self.rect.y + dy, self.ancho, self.alto):
-                    # Verificar si está debajo del suelo (saltando)
+                    # Verifica si está debajo del suelo, es decir, saltando
                     if self.vel_y < 0:
                         dy = bloque[1].bottom - self.rect.top
                         self.vel_y = 0
-                    # Verificar si está encima del suelo (cayendo)
+                    # Verifica si está encima del suelo, es decir, cayendo
                     elif self.vel_y >= 0:
                         dy = bloque[1].top - self.rect.bottom
                         self.vel_y = 0
                         self.en_aire = False
 
-            # Verificar colisión con enemigos
-            if pygame.sprite.spritecollide(self, grupo_blob, False):
+            # Verifica colisión con enemigos
+            if pygame.sprite.spritecollide(self, grupo_blobs, False):
                 fin_juego = -1
                 fx_fin_juego.play()
 
-            # Verificar colisión con lava
+            # Verifica colisión con lava
             if pygame.sprite.spritecollide(self, grupo_lava, False):
                 fin_juego = -1
                 fx_fin_juego.play()
 
-            # Verificar colisión con salida
+            # Verifica colisión con la salida
             if pygame.sprite.spritecollide(self, grupo_salida, False):
                 fin_juego = 1
 
-            # Actualizar coordenadas del jugador
+            # Verifica colisión con plataformas
+            for plataforma in grupo_plataformas:
+                # Colisión en dirección x
+                if plataforma.rect.colliderect(self.rect.x + dx, self.rect.y, self.ancho, self.alto):
+                    dx = 0
+                # Colisión en dirección y
+                if plataforma.rect.colliderect(self.rect.x, self.rect.y + dy, self.ancho, self.alto):
+                    # Verifica si está debajo de la plataforma
+                    if abs((self.rect.top + dy) - plataforma.rect.bottom) < umbral_colision:
+                        self.vel_y = 0
+                        dy = plataforma.rect.bottom - self.rect.top
+                    # Verifica si está encima de la plataforma
+                    elif abs((self.rect.bottom + dy) - plataforma.rect.top) < umbral_colision:
+                        self.rect.bottom = plataforma.rect.top - 1
+                        self.en_aire = False
+                        dy = 0
+                    # Se mueve lateralmente con la plataforma
+                    if plataforma.mover_x != 0:
+                        self.rect.x += plataforma.direccion_movimiento
+
+            # Actualiza las coordenadas del jugador
             self.rect.x += dx
             self.rect.y += dy
 
@@ -189,13 +223,12 @@ class Jugador():
             if self.rect.y > 200:
                 self.rect.y -= 5
 
-        # Dibujar jugador en pantalla
+        # Dibuja al jugador en la pantalla
         pantalla.blit(self.imagen, self.rect)
-        pygame.draw.rect(pantalla, (255, 255, 255), self.rect, 2)
 
         return fin_juego
 
-    def resetear(self, x, y):
+    def reiniciar(self, x, y):
         self.imagenes_derecha = []
         self.imagenes_izquierda = []
         self.indice = 0
@@ -214,67 +247,68 @@ class Jugador():
         self.ancho = self.imagen.get_width()
         self.alto = self.imagen.get_height()
         self.vel_y = 0
-        self.saltado = False
+        self.saltando = False
         self.direccion = 0
         self.en_aire = True
 
+
 class Mundo():
-    def __init__(self, datos):
+    def __init__(self, data):
         self.lista_bloques = []
 
-        # Cargar imágenes
-        img_tierra = pygame.image.load('img/dirt.png')
+        # Carga las imágenes
+        img_suelo = pygame.image.load('img/dirt.png')
         img_pasto = pygame.image.load('img/grass.png')
 
-        fila = 0
-        for fila_datos in datos:
-            columna = 0
-            for bloque_datos in fila_datos:
-                if bloque_datos == 1:
-                    img = pygame.transform.scale(img_tierra, (tamano_bloque, tamano_bloque))
-                    rect = img.get_rect()
-                    rect.x = columna * tamano_bloque
-                    rect.y = fila * tamano_bloque
-                    bloque = (img, rect)
+        contador_fila = 0
+        for fila in data:
+            contador_columna = 0
+            for bloque in fila:
+                if bloque == 1:
+                    img = pygame.transform.scale(img_suelo, (tamano_bloque, tamano_bloque))
+                    rect_img = img.get_rect()
+                    rect_img.x = contador_columna * tamano_bloque
+                    rect_img.y = contador_fila * tamano_bloque
+                    bloque = (img, rect_img)
                     self.lista_bloques.append(bloque)
-                if bloque_datos == 2:
+                if bloque == 2:
                     img = pygame.transform.scale(img_pasto, (tamano_bloque, tamano_bloque))
-                    rect = img.get_rect()
-                    rect.x = columna * tamano_bloque
-                    rect.y = fila * tamano_bloque
-                    bloque = (img, rect)
+                    rect_img = img.get_rect()
+                    rect_img.x = contador_columna * tamano_bloque
+                    rect_img.y = contador_fila * tamano_bloque
+                    bloque = (img, rect_img)
                     self.lista_bloques.append(bloque)
-                if bloque_datos == 3:
-                    blob = Enemigo(columna * tamano_bloque, fila * tamano_bloque + 15)
-                    grupo_blob.add(blob)
-                if bloque_datos == 4:
-                    plataforma = Plataforma(columna * tamano_bloque, fila * tamano_bloque, 1, 0)
-                    grupo_plataforma.add(plataforma)
-                if bloque_datos == 5:
-                    plataforma = Plataforma(columna * tamano_bloque, fila * tamano_bloque, 0, 1)
-                    grupo_plataforma.add(plataforma)
-                if bloque_datos == 6:
-                    lava = Lava(columna * tamano_bloque, fila * tamano_bloque + (tamano_bloque // 2))
+                if bloque == 3:
+                    blob = Enemigo(contador_columna * tamano_bloque, contador_fila * tamano_bloque + 15)
+                    grupo_blobs.add(blob)
+                if bloque == 4:
+                    plataforma = Plataforma(contador_columna * tamano_bloque, contador_fila * tamano_bloque, 1, 0)
+                    grupo_plataformas.add(plataforma)
+                if bloque == 5:
+                    plataforma = Plataforma(contador_columna * tamano_bloque, contador_fila * tamano_bloque, 0, 1)
+                    grupo_plataformas.add(plataforma)
+                if bloque == 6:
+                    lava = Lava(contador_columna * tamano_bloque, contador_fila * tamano_bloque + (tamano_bloque // 2))
                     grupo_lava.add(lava)
-                if bloque_datos == 7:
-                    moneda = Coin(columna * tamano_bloque + (tamano_bloque // 2), fila * tamano_bloque + (tamano_bloque // 2))
-                    grupo_moneda.add(moneda)
-                if bloque_datos == 8:
-                    salida = Exit(columna * tamano_bloque, fila * tamano_bloque - (tamano_bloque // 2))
+                if bloque == 7:
+                    moneda = Moneda(contador_columna * tamano_bloque + (tamano_bloque // 2), contador_fila * tamano_bloque + (tamano_bloque // 2))
+                    grupo_monedas.add(moneda)
+                if bloque == 8:
+                    salida = Salida(contador_columna * tamano_bloque, contador_fila * tamano_bloque - (tamano_bloque // 2))
                     grupo_salida.add(salida)
-                columna += 1
-            fila += 1
+                contador_columna += 1
+            contador_fila += 1
 
     def dibujar(self):
         for bloque in self.lista_bloques:
             pantalla.blit(bloque[0], bloque[1])
-            pygame.draw.rect(pantalla, (255, 255, 255), bloque[1], 2)
+
 
 class Enemigo(pygame.sprite.Sprite):
     def __init__(self, x, y):
         pygame.sprite.Sprite.__init__(self)
-        self.imagen = pygame.image.load('img/blob.png')
-        self.rect = self.imagen.get_rect()
+        self.image = pygame.image.load('img/blob.png')
+        self.rect = self.image.get_rect()
         self.rect.x = x
         self.rect.y = y
         self.direccion_movimiento = 1
@@ -286,6 +320,7 @@ class Enemigo(pygame.sprite.Sprite):
         if abs(self.contador_movimiento) > 50:
             self.direccion_movimiento *= -1
             self.contador_movimiento *= -1
+
 
 class Plataforma(pygame.sprite.Sprite):
     def __init__(self, x, y, mover_x, mover_y):
@@ -308,6 +343,7 @@ class Plataforma(pygame.sprite.Sprite):
             self.direccion_movimiento *= -1
             self.contador_movimiento *= -1
 
+
 class Lava(pygame.sprite.Sprite):
     def __init__(self, x, y):
         pygame.sprite.Sprite.__init__(self)
@@ -317,123 +353,116 @@ class Lava(pygame.sprite.Sprite):
         self.rect.x = x
         self.rect.y = y
 
-class Lava(pygame.sprite.Sprite):
-	def __init__(self, x, y):
-		pygame.sprite.Sprite.__init__(self)
-		img = pygame.image.load('img/lava.png')
-		self.image = pygame.transform.scale(img, (tamano_bloque, tamano_bloque // 2))
-		self.rect = self.image.get_rect()
-		self.rect.x = x
-		self.rect.y = y
+
+class Moneda(pygame.sprite.Sprite):
+    def __init__(self, x, y):
+        pygame.sprite.Sprite.__init__(self)
+        img = pygame.image.load('img/coin.png')
+        self.image = pygame.transform.scale(img, (tamano_bloque // 2, tamano_bloque // 2))
+        self.rect = self.image.get_rect()
+        self.rect.center = (x, y)
 
 
-class Coin(pygame.sprite.Sprite):
-	def __init__(self, x, y):
-		pygame.sprite.Sprite.__init__(self)
-		img = pygame.image.load('img/coin.png')
-		self.image = pygame.transform.scale(img, (tamano_bloque // 2, tamano_bloque // 2))
-		self.rect = self.image.get_rect()
-		self.rect.center = (x, y)
-
-
-class Exit(pygame.sprite.Sprite):
-	def __init__(self, x, y):
-		pygame.sprite.Sprite.__init__(self)
-		img = pygame.image.load('img/exit.png')
-		self.image = pygame.transform.scale(img, (tamano_bloque, int(tamano_bloque * 1.5)))
-		self.rect = self.image.get_rect()
-		self.rect.x = x
-		self.rect.y = y
+class Salida(pygame.sprite.Sprite):
+    def __init__(self, x, y):
+        pygame.sprite.Sprite.__init__(self)
+        img = pygame.image.load('img/exit.png')
+        self.image = pygame.transform.scale(img, (tamano_bloque, int(tamano_bloque * 1.5)))
+        self.rect = self.image.get_rect()
+        self.rect.x = x
+        self.rect.y = y
 
 
 jugador = Jugador(100, alto_pantalla - 130)
 
-grupo_blob = pygame.sprite.Group()
-grupo_plataforma = pygame.sprite.Group()
+grupo_blobs = pygame.sprite.Group()
+grupo_plataformas = pygame.sprite.Group()
 grupo_lava = pygame.sprite.Group()
-grupo_moneda = pygame.sprite.Group()
+grupo_monedas = pygame.sprite.Group()
 grupo_salida = pygame.sprite.Group()
 
-# crear moneda ficticia para mostrar la puntuación
-moneda_puntuacion = Coin(tamano_bloque // 2, tamano_bloque // 2)
-grupo_moneda.add(moneda_puntuacion)
+# Crea una moneda ficticia para mostrar el puntaje
+moneda_puntaje = Moneda(tamano_bloque // 2, tamano_bloque // 2)
+grupo_monedas.add(moneda_puntaje)
 
-# cargar datos de nivel y crear mundo
+# Carga los datos del nivel y crea el mundo
 if path.exists(f'level{nivel}_data'):
-	pickle_in = open(f'level{nivel}_data', 'rb')
-	datos_mundo = pickle.load(pickle_in)
+    pickle_in = open(f'level{nivel}_data', 'rb')
+    datos_mundo = pickle.load(pickle_in)
 mundo = Mundo(datos_mundo)
 
-# crear botones
+
+# Crea los botones
 boton_reiniciar = Boton(ancho_pantalla // 2 - 50, alto_pantalla // 2 + 100, img_reiniciar)
 boton_inicio = Boton(ancho_pantalla // 2 - 350, alto_pantalla // 2, img_inicio)
-boton_salida = Boton(ancho_pantalla // 2 + 150, alto_pantalla // 2, img_salida)
+boton_salir = Boton(ancho_pantalla // 2 + 150, alto_pantalla // 2, img_salir)
+
 
 corriendo = True
 while corriendo:
 
-	reloj.tick(fps)
+    reloj.tick(fps)
 
-	pantalla.blit(img_fondo, (0, 0))
-	pantalla.blit(img_sol, (100, 100))
+    pantalla.blit(img_fondo, (0, 0))
+    pantalla.blit(img_sol, (100, 100))
 
-	if menu_principal == True:
-		if boton_salida.draw():
-			corriendo = False
-		if boton_inicio.draw():
-			menu_principal = False
-	else:
-		mundo.draw()
+    if menu_principal:
+        if boton_salir.dibujar():
+            corriendo = False
+        if boton_inicio.dibujar():
+            menu_principal = False
+    else:
+        mundo.dibujar()
 
-		if fin_juego == 0:
-			grupo_blob.update()
-			grupo_plataforma.update()
-			# actualizar puntuación
-			# verificar si se ha recogido una moneda
-			if pygame.sprite.spritecollide(jugador, grupo_moneda, True):
-				puntuación += 1
-				fx_moneda.play()
-			dibujar_texto('X ' + str(puntuación), fuente_puntuacion, blanco, tamano_bloque - 10, 10)
-		
-		grupo_blob.draw(pantalla)
-		grupo_plataforma.draw(pantalla)
-		grupo_lava.draw(pantalla)
-		grupo_moneda.draw(pantalla)
-		grupo_salida.draw(pantalla)
+        if fin_juego == 0:
+            grupo_blobs.update()
+            grupo_plataformas.update()
+            # Actualiza el puntaje
+            # Verifica si se ha recogido una moneda
+            if pygame.sprite.spritecollide(jugador, grupo_monedas, True):
+                puntaje += 1
+                fx_moneda.play()
+            dibujar_texto('X ' + str(puntaje), fuente_puntaje, blanco, tamano_bloque - 10, 10)
+        
+        grupo_blobs.draw(pantalla)
+        grupo_plataformas.draw(pantalla)
+        grupo_lava.draw(pantalla)
+        grupo_monedas.draw(pantalla)
+        grupo_salida.draw(pantalla)
 
-		fin_juego = jugador.update(fin_juego)
+        fin_juego = jugador.actualizar(fin_juego)
 
-		# si el jugador ha muerto
-		if fin_juego == -1:
-			if boton_reiniciar.draw():
-				datos_mundo = []
-				mundo = reiniciar_nivel(nivel)
-				fin_juego = 0
-				puntuación = 0
+        # Si el jugador ha muerto
+        if fin_juego == -1:
+            if boton_reiniciar.dibujar():
+                datos_mundo = []
+                mundo = reiniciar_nivel(nivel)
+                fin_juego = 0
+                puntaje = 0
 
-		# si el jugador ha completado el nivel
-		if fin_juego == 1:
-			# reiniciar juego e ir al siguiente nivel
-			nivel += 1
-			if nivel <= max_niveles:
-				# reiniciar nivel
-				datos_mundo = []
-				mundo = reiniciar_nivel(nivel)
-				fin_juego = 0
-			else:
-				dibujar_texto('¡GANASTE!', fuente, azul, (ancho_pantalla // 2) - 140, alto_pantalla // 2)
-				if boton_reiniciar.draw():
-					nivel = 1
-					# reiniciar nivel
-					datos_mundo = []
-					mundo = reiniciar_nivel(nivel)
-					fin_juego = 0
-					puntuación = 0
+        # Si el jugador ha completado el nivel
+        if fin_juego == 1:
+            # Reinicia el juego y pasa al siguiente nivel
+            nivel += 1
+            if nivel <= max_niveles:
+                # Reinicia el nivel
+                datos_mundo = []
+                mundo = reiniciar_nivel(nivel)
+                fin_juego = 0
+            else:
+                dibujar_texto('¡GANASTE!', fuente, azul, (ancho_pantalla // 2) - 140, alto_pantalla // 2)
+                if boton_reiniciar.dibujar():
+                    nivel = 1
+                    # Reinicia el nivel
+                    datos_mundo = []
+                    mundo = reiniciar_nivel(nivel)
+                    fin_juego = 0
+                    puntaje = 0
 
-	for evento in pygame.event.get():
-		if evento.type == pygame.QUIT:
-			corriendo = False
+    for evento in pygame.event.get():
+        if evento.type == pygame.QUIT:
+            corriendo = False
 
-	pygame.display.update()
+    pygame.display.update()
 
 pygame.quit()
