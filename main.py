@@ -11,8 +11,15 @@ pygame.init()
 reloj = pygame.time.Clock()
 fps = 60
 
+<<<<<<< Updated upstream
 ancho_pantalla = 1280
 alto_pantalla = 720
+=======
+# Ventana del juego
+pantalla_size = 1000
+ancho_pantalla = pantalla_size
+alto_pantalla = pantalla_size
+>>>>>>> Stashed changes
 
 pantalla = pygame.display.set_mode((ancho_pantalla, alto_pantalla))
 pygame.display.set_caption('Plataformas')

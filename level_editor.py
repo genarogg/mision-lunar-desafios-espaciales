@@ -9,11 +9,22 @@ reloj = pygame.time.Clock()
 fps = 60
 
 #ventana del juego
+<<<<<<< Updated upstream
 tamano_celda = 25
 columnas = 10
 margen = 100
 ancho_pantalla = 1280
 alto_pantalla = 720
+=======
+tamano_celda = 40
+columnas = 16
+margen = 100
+
+# Ventana del juego
+pantalla_size = 800
+ancho_pantalla = pantalla_size
+alto_pantalla = pantalla_size
+>>>>>>> Stashed changes
 
 pantalla = pygame.display.set_mode((ancho_pantalla, alto_pantalla))
 pygame.display.set_caption('Editor de Niveles')
