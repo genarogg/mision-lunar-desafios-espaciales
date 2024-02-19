@@ -1,6 +1,6 @@
 integrantes:
-Leniangel Pérez 
-Genaro Gonzalez
+Leniangel Pérez - C.I.: 30.160.490
+Genaro Gonzalez - C.I.: 25.074.591
 
 Wild Runner
 
