@@ -7,7 +7,8 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "python main.py",
     "editor": "python level_editor.py",
-    "install": "pip install -r requirements.txt"
+    "install": "pip install -r requirements.txt",
+    "build": "pyinstaller --onefile main.py"
   },
   "keywords": [],
   "author": "",
