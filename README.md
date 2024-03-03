@@ -1,9 +1,9 @@
-**Integrantes:**
+# **Integrantes:**
 
 * Leniangel Pérez - C.I.: 30.160.490
 * Genaro Gonzalez - C.I.: 25.074.591
 
-**Wild Runner**
+# **Wild Runner**
 
 Wild Runner es un emocionante juego de plataformas inspirado en el clásico Super Mario Bros. Diseñado para proporcionar una experiencia de juego envolvente y desafiante, Wild Runner cuenta con niveles únicos, cada uno con su propia ambientación, enemigos y desafíos. Los jugadores deben navegar a través de estos niveles, enfrentándose a diversos enemigos y recolectando tokens para avanzar.
 
@@ -17,9 +17,9 @@ Wild Runner es un emocionante juego de plataformas inspirado en el clásico Supe
 
 * Recogida de Tokens: La mecánica principal del juego implica la recogida de tokens dispersos a lo largo de cada nivel. Estos tokens son esenciales para desbloquear nuevas áreas y superar los niveles.
 
-# Cuenta con un Menú con Botón de Inicio y Botón Exit, Siete Niveles con minijuegos como recoger tokens y esquivar enemigos.
+**Cuenta con un Menú con Botón de Inicio y Botón Exit, Siete Niveles con minijuegos como recoger tokens y esquivar enemigos.**
 
-# Este juego ha sido desarrollado usando Python y Pygame.
+**Este juego ha sido desarrollado usando Python y Pygame.**
 
 # **Ejecución**
 
